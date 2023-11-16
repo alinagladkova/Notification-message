@@ -1,0 +1,130 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  height: 100%;
+  background-color: #161616;
+}
+
+.alert {
+}
+
+.alert__buttons {
+  display: flex;
+
+  flex-direction: column;
+  width: 200px;
+  padding: 15px;
+}
+
+.alert__btn {
+  padding: 10px 15px;
+  cursor: pointer;
+  border: 1px solid #4e2a51;
+  border-radius: 3px;
+  background-color: #0f0f0f;
+  color: antiquewhite;
+}
+
+.alert__btn:hover {
+  border: 1px solid #2f6d8a;
+  background-color: #4c4c4c;
+}
+
+.alert__btn--success {
+  margin-bottom: 10px;
+}
+
+.alert__btn--error {
+}
+
+.alert__menu {
+}
+
+.alert__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.control__circle {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  background-color: #4e2a51;
+  color: antiquewhite;
+  border-radius: 50%;
+  border: 1px solid #161616;
+  z-index: 2;
+}
+
+.control__btn {
+  position: absolute;
+  cursor: pointer;
+  left: 2%;
+  padding: 10px 15px 10px 25px;
+  background-color: #4e2a51;
+  color: antiquewhite;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+
+.alert__body {
+  position: relative;
+  max-width: 200px;
+  height: auto;
+  margin: 3px;
+}
+
+.notification--success {
+  background-color: #406b46;
+}
+.notification--error {
+  background-color: #6c3a3a;
+}
+
+.notification--success .notification__timer {
+  background-color: rgb(102, 201, 102);
+}
+.notification--error .notification__timer {
+  background-color: rgb(185, 48, 48);
+}
+
+.notification__timer {
+  height: 2px;
+  width: 100%;
+}
+
+.notification__info {
+  padding: 10px;
+}
+
+.notification__title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.notification__text {
+  font-size: 14px;
+}
+
+.notification__close {
+  position: absolute;
+  top: 5%;
+  right: 5%;
+  cursor: pointer;
+  font-size: 17px;
+  border: transparent;
+  background-color: transparent;
+}
+.notification__close:hover {
+  color: antiquewhite;
+}
