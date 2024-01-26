@@ -6,36 +6,17 @@ function createElement(html) {
   return root.firstElementChild;
 }
 
-// как мы достали из класса внешнюю функцию createElement
-
-class AlertList {
+class BasicComponents {
   _element = null;
   _subElements = {};
-  _alertQueue = [];
-  constructor(selector, maxNumber) {
-    this._parent = document.querySelector(selector);
-    this._maxNumber = maxNumber;
-    this.init();
-  }
-  init() {
+
+  _init() {
     this._element = createElement(this._getTemplate());
     this._subElements = this._getSubElements();
-    this.render();
   }
 
-  render() {
-    this._subElements.menuWrapper.insertAdjacentElement("beforeend", this._getTemplate());
-  }
-
-  _getTemplate() {
-    return `
-		    <div class="alert__menu" data-element='menuWrapper'>
-      		<div class="alert__control control">
-        		<div class="control__circle" data-element='numberAlerts'>9</div>
-        		<button class="control__btn" data-element='btnHide'>Скрыть всё</button>
-      		</div>
-    		</div>
-		`;
+  get element() {
+    return this._element;
   }
 
   _getSubElements() {
@@ -48,86 +29,158 @@ class AlertList {
   }
 }
 
-const alertList = new AlertList({
-  selector: "body",
-  maxNumber: 3,
-});
+class AlertList extends BasicComponents {
+  _alertQueue = [];
+  _alertNumber = 0;
 
-class Alert {
-  _root = null;
-  closeBtn = null;
-  _timerId;
-  constructor({ type, timer, title, text }) {
-    this.type = type;
-    this.timer = timer;
-    this.title = title;
-    this.text = text;
+  constructor({ maxNumber }, Alert) {
+    super();
+    this._maxNumber = maxNumber;
+    this._Alert = Alert;
     this._init();
   }
 
   _init() {
-    this._root = createElement(this._getTemplate());
-    this.closeBtn = this._root.querySelector('[data-btn="close"]');
-    this.listener();
+    super._init();
+    this._addListeners();
   }
-  listener() {
-    this.closeBtn.addEventListener("click", () => {
+
+  _addListeners() {
+    this._subElements.btnHide.addEventListener("click", () => {
+      this._alertQueue.forEach((alert) => {
+        alert.destroy();
+        this._remove(alert);
+      });
+    });
+  }
+
+  _reRender() {
+    this._subElements.number.textContent = `${this._alertNumber - this._maxNumber}`;
+
+    if (this._alertNumber > this._maxNumber) {
+      this._subElements.control.classList.add("control--active");
+    }
+  }
+
+  addAlert(alert) {
+    this._alertNumber = this._alertQueue.push(alert);
+    this._subElements.list.insertAdjacentElement("afterbegin", alert.render());
+  }
+
+  _remove() {
+    // this._alertQueue = this._alertQueue.filter((alert) => )
+  }
+
+  _getTemplate() {
+    return `
+		    <div class="alert__menu" data-element='menuWrapper'>
+      		<div class="alert__control control" data-element='control'>
+        		<div class="control__circle" data-element='numberAlerts'>9</div>
+        		<button class="control__btn" data-element='btnHide'>Скрыть всё</button>
+      		</div>
+					<div class="alert__list"  data-element='list'></div>
+    		</div>
+		`;
+  }
+}
+
+class Alert extends BasicComponents {
+  _timerId;
+  _callback;
+
+  constructor({ type, time, title, text }) {
+    super();
+    this._type = type;
+    this._time = time;
+    this._title = title;
+    this._text = text;
+    this._init();
+  }
+
+  _init() {
+    super._init();
+    this._addListeners();
+  }
+
+  _addListeners() {
+    this._subElements.close.addEventListener("click", () => {
+      // this._callback(this);
       this.destroy();
     });
   }
-  _getTemplate() {
-    return `
-		<div class="alert__body notification--${this.type}">
-      <div class="notification__timer" ></div>
-      <div class="notification__info">
-        <div class="notification__title">${this.title}</div>
-        <div class="notification__text">${this.text}</div>
-        <button class="notification__close" data-btn="close">x</button>
-			</div>
-    </div>
-		`;
+
+  render() {
+    this._createTimer();
+    return this._element;
   }
 
-  createTimer() {
-    const timerId = this._timerId;
-    timerId = setTimeout(() => {
-      this.add();
+  _createTimer() {
+    this._timerId = setTimeout(() => {
+      this._remove();
     }, this.time);
   }
 
-  add() {
-    // -
-    return this.parent.insertAdjacentElement("beforeend", this._root);
+  getSize() {
+    return {
+      height: this._element.getBoundingClientRect().height,
+      width: this._element.getBoundingClientRect().width,
+    };
   }
 
-  remove() {
-    return this._root.remove();
+  _createTimer() {
+    this._timerId = setTimeout(() => {
+      this._remove();
+    }, this._time);
+  }
+
+  _remove() {
+    return this._element.remove();
   }
 
   destroy() {
     clearTimeout(this._timerId);
-    return this.remove();
+    return this._remove();
+  }
+
+  _getTemplate() {
+    return `
+		<div class="alert__body notification--${this._type}">
+      <div class="notification__timer" style="animation-duration:${this.time / 1000}s"></div>
+      <div class="notification__info">
+        <div class="notification__title">${this._title}</div>
+        <div class="notification__text">${this._text}</div>
+        <button class="notification__close" data-element="close">x</button>
+			</div>
+    </div>
+		`;
   }
 }
 
-const success = new Alert({
-  type: "success",
-  title: "Успех!",
-  text: "Вы выиграли 1000000!",
-  timer: 5000,
+const root = document.querySelector(".root");
+const alertList = new AlertList({
+  maxNumber: 3,
 });
 
-const error = new Alert({
-  type: "error",
-  title: "Ошибка!",
-  text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo vitae vero voluptas adipisci est perspiciatis excepturi.",
-  timer: 3000,
+root.append(alertList.element);
+
+root.querySelector(".alert__btn--success").addEventListener("click", () => {
+  return alertList.addAlert(
+    new Alert({
+      type: "success",
+      title: "Успех!",
+      text: "Вы выиграли 1000000!",
+      time: 5000,
+    })
+  );
 });
 
-document.querySelector(".alert__btn--success").addEventListener("click", () => {
-  return success.add();
-});
-
-document.querySelector(".alert__btn--error").addEventListener("click", () => {
-  return error.add();
+root.querySelector(".alert__btn--error").addEventListener("click", () => {
+  return alertList.addAlert(
+    new Alert({
+      type: "error",
+      title: "Ошибка",
+      text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo vitae vero voluptas adipisci est perspiciatis excepturi.",
+      time: 3000,
+    })
+  );
 });
