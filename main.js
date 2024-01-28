@@ -55,27 +55,39 @@ class AlertList extends BasicComponents {
   }
 
   _reRender() {
-    this._subElements.number.textContent = `${this._alertNumber - this._maxNumber}`;
+    this._subElements.numberAlerts.textContent = `+${this._alertNumber - this._maxNumber}`;
 
     if (this._alertNumber > this._maxNumber) {
       this._subElements.control.classList.add("control--active");
+      this._subElements.list.style.height = `${
+        5 * this._maxNumber +
+        this._alertQueue.slice(0, this._maxNumber).reduce((acc, el) => {
+          acc + el.getSize().height, 0;
+        })
+      }px`;
+    } else {
+      this._subElements.control.classList.remove("control--active");
+      this._subElements.list.style.height = "auto";
     }
   }
 
   addAlert(alert) {
     this._alertNumber = this._alertQueue.push(alert);
-    this._subElements.list.insertAdjacentElement("afterbegin", alert.render());
+    this._subElements.list.insertAdjacentElement("afterbegin", alert.render(this._remove.bind(this)));
+    this._reRender();
   }
 
-  _remove() {
-    // this._alertQueue = this._alertQueue.filter((alert) => )
+  _remove(context) {
+    this._alertQueue = this._alertQueue.filter((alert) => context !== alert);
+    this._alertNumber -= 1;
+    this._reRender();
   }
 
   _getTemplate() {
     return `
 		    <div class="alert__menu" data-element='menuWrapper'>
       		<div class="alert__control control" data-element='control'>
-        		<div class="control__circle" data-element='numberAlerts'>9</div>
+        		<div class="control__circle" data-element='numberAlerts'></div>
         		<button class="control__btn" data-element='btnHide'>Скрыть всё</button>
       		</div>
 					<div class="alert__list"  data-element='list'></div>
@@ -104,12 +116,13 @@ class Alert extends BasicComponents {
 
   _addListeners() {
     this._subElements.close.addEventListener("click", () => {
-      // this._callback(this);
+      this._callback(this);
       this.destroy();
     });
   }
 
-  render() {
+  render(callback) {
+    this._callback = callback;
     this._createTimer();
     return this._element;
   }
@@ -117,7 +130,8 @@ class Alert extends BasicComponents {
   _createTimer() {
     this._timerId = setTimeout(() => {
       this._remove();
-    }, this.time);
+      this._callback(this);
+    }, this._time);
   }
 
   getSize() {
@@ -125,12 +139,6 @@ class Alert extends BasicComponents {
       height: this._element.getBoundingClientRect().height,
       width: this._element.getBoundingClientRect().width,
     };
-  }
-
-  _createTimer() {
-    this._timerId = setTimeout(() => {
-      this._remove();
-    }, this._time);
   }
 
   _remove() {
