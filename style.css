@@ -45,11 +45,17 @@ body {
 .alert__menu {
 }
 
-.alert__control {
+.control {
+  display: none;
+  visibility: hidden;
   position: relative;
-  display: flex;
   align-items: center;
   padding: 10px;
+}
+
+.control--active {
+  display: flex;
+  visibility: visible;
 }
 
 .control__circle {
@@ -75,6 +81,11 @@ body {
   color: antiquewhite;
   border: 1px solid transparent;
   border-radius: 3px;
+}
+
+.control__btn:hover {
+  border-color: #4e2a51;
+  background-color: #0f0f0f;
 }
 
 .alert__body {
